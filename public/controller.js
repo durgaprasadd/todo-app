@@ -14,12 +14,14 @@ const addList = function(document, title) {
   newList.className = 'list';
   newList.innerText = title;
   parent.appendChild(newList);
+  document.getElementById('_title').remove();
+  document.getElementById('_submit').remove();
 };
 
 const addTextBoxDetails = function(textBox) {
   textBox.rows = 5;
   textBox.col = 50;
-  textBox.value = '*  title  *';
+  textBox.placeholder = '*  title  *';
   textBox.className = 'textBox';
   textBox.id = '_title';
 };
@@ -27,6 +29,7 @@ const addTextBoxDetails = function(textBox) {
 const addSubmitButtonDetails = function(submitButton) {
   submitButton.innerText = 'submit';
   submitButton.className = 'submitButton';
+  submitButton.id = '_submit';
   submitButton.onclick = createList.bind(null, document);
 };
 
