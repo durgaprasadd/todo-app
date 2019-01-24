@@ -1,5 +1,7 @@
 class List {
-  constructor() {
+  constructor(listName, id) {
+    this.listName = listName;
+    this.id = id;
     this.items = [];
   }
   addItem(itemDescription) {
@@ -21,13 +23,17 @@ class Item {
 }
 
 class TodoLists {
-  constructor() {
-    this.lists = [];
+  constructor(lists = []) {
+    this.lists = lists;
   }
-  addList(listName) {
-    let list = {};
-    list[listName] = new List();
-    this.lists.push(list);
+  addList(listName, id) {
+    this.lists.push(new List(listName, id));
+  }
+  getLists() {
+    return this.lists;
+  }
+  getStringifiedLists() {
+    return JSON.stringify(this.lists);
   }
 }
 

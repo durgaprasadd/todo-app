@@ -1,21 +1,26 @@
 const createList = function(document) {
   let title = document.getElementById('_title').value;
-  const req = new Request('/addList', { method: 'POST', body: title });
+  let id = new Date().getTime();
+  let body = { id, title };
+  const req = new Request('/addList', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
   fetch(req)
     .then(res => res.text())
     .then(content => {
-      addList(document, title);
+      addList(document, title, id);
+      document.getElementById('_title').remove();
+      document.getElementById('_submit').remove();
     });
 };
 
-const addList = function(document, title) {
+const addList = function(document, title, id) {
   let parent = document.getElementById('_lists');
-  let newList = document.createElement('div');
-  newList.className = 'list';
-  newList.innerText = title;
+  let newList = document.createElement('a');
+  newList.href = id;
+  newList.innerHTML = `<div class="list">${title}</div>`;
   parent.appendChild(newList);
-  document.getElementById('_title').remove();
-  document.getElementById('_submit').remove();
 };
 
 const addTextBoxDetails = function(textBox) {
@@ -43,9 +48,21 @@ const createTextBox = function(document) {
   parent.appendChild(submitButton);
 };
 
+const getStoredTodoLists = function(document) {
+  fetch('/getTodoLists')
+    .then(res => res.text())
+    .then(data => {
+      let listsDetails = JSON.parse(data);
+      listsDetails.forEach(listDetails =>
+        addList(document, listDetails.listName, listDetails.id)
+      );
+    });
+};
+
 const initialize = function() {
   const addListButton = document.getElementById('_addList');
   addListButton.onclick = createTextBox.bind(null, document);
+  getStoredTodoLists(document);
 };
 
 window.onload = initialize;

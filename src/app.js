@@ -2,7 +2,8 @@ const Sheegra = require('./sheegra');
 const app = new Sheegra();
 const fs = require('fs');
 const TodoLists = require('./model.js');
-const todoLists = new TodoLists();
+const userLists = fs.readFileSync('./private/userList.json');
+const todoLists = new TodoLists(JSON.parse(userLists));
 
 const logRequest = function(req, res, next) {
   console.log('url =>', req.url);
@@ -54,12 +55,23 @@ const reader = function(req, res) {
 };
 
 const addList = function(req, res) {
-  todoLists.addList(req.body);
+  let { title, id } = JSON.parse(req.body);
+  todoLists.addList(title, id);
+  fs.writeFile(
+    './private/userList.json',
+    todoLists.getStringifiedLists(),
+    () => {}
+  );
   res.end();
+};
+
+const getTodoLists = function(req, res) {
+  send(res, todoLists.getStringifiedLists());
 };
 
 app.use(readBody);
 app.use(logRequest);
 app.post('/addList', addList);
+app.get('/getTodoLists', getTodoLists);
 app.use(reader);
 module.exports = app.handleRequest.bind(app);
