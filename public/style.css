@@ -1,0 +1,40 @@
+.list {
+  font-size: 30px;
+  margin: 20px 100px;
+  background-color: lightblue;
+}
+
+.lists {
+  width: 800px;
+  margin: 75px auto;
+  position: relative;
+}
+
+.title {
+  position: absolute;
+  top: -50px;
+  left: 350px;
+  font-size: 30px;
+}
+
+.addList {
+  position: absolute;
+  top: -40px;
+  left: 800px;
+  width: 200px;
+  font-size: 25px;
+}
+
+.textBox {
+  position: absolute;
+  top: 10px;
+  left: 800px;
+  font-size: 20px;
+}
+
+.submitButton {
+  position: absolute;
+  top: 150px;
+  left: 800px;
+  font-size: 20px;
+}
