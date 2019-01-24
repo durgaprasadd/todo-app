@@ -1,9 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>login/signin</title>
+    <title>Home Page</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="authentication.js"></script>
   </head>
   <body>
-    <button>login</button> <button>Sign up</button>
+    <div>
+      <h1 style="text-align: center; color:green">WELCOME TO TODO WEBAPP</h1>
+      <div style="display:flex;justify-content: space-between">
+        <div><img src="icon.png" /></div>
+        <div>
+          <button id="login" class="AuthButton">login</button>
+          <button id="signup" class="AuthButton">Sign up</button>
+          <div id='authDiv'></div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
