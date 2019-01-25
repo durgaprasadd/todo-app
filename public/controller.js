@@ -59,9 +59,15 @@ const getStoredTodoLists = function(document) {
     });
 };
 
+const logout = function(document) {
+  fetch('/logout').then(res => (window.location = '/'));
+};
+
 const initialize = function() {
   const addListButton = document.getElementById('_addList');
   addListButton.onclick = createTextBox.bind(null, document);
+  const logoutButton = document.getElementById('_logout');
+  logoutButton.onclick = logout.bind(null, document);
   getStoredTodoLists(document);
 };
 

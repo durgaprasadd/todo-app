@@ -3,7 +3,6 @@ const app = new Sheegra();
 const fs = require('fs');
 const TodoLists = require('./model.js');
 const Users = require('./users.js');
-let user_name = '';
 let todoLists = '';
 
 const getUsers = function() {
@@ -76,7 +75,7 @@ const addList = function(req, res) {
   let { title, id } = JSON.parse(req.body);
   todoLists.addList(title, id);
   fs.writeFile(
-    `./private/todoLists/${user_name}`,
+    `./private/todoLists/${getUserName(req.cookie)}`,
     todoLists.getStringifiedLists(),
     () => {}
   );
@@ -114,13 +113,16 @@ const validateUser = function(req, res) {
     return;
   }
   setCookie(res, user.userName);
-  user_name = user.userName;
   send(res, 'success');
 };
 
+const getUserName = function(text) {
+  return text.split('=')[1];
+};
+
 const serveDashboard = function(req, res) {
-  console.log(user_name);
-  const path = `./private/todoLists/${user_name}`;
+  let userName = getUserName(req.cookie);
+  const path = `./private/todoLists/${userName}`;
   fs.readFile(path, (err, data) => {
     if (!err) {
       todoLists = new TodoLists(JSON.parse(data));
@@ -132,6 +134,20 @@ const serveDashboard = function(req, res) {
   });
 };
 
+const logout = function(req, res) {
+  res.setHeader('set-cookie', `userName=`);
+  res.end();
+};
+
+const checkUserLogin = function(req, res) {
+  let userName = getUserName(req.cookie);
+  if (!userName) {
+    reader(req, res);
+    return;
+  }
+  serveDashboard(req, res);
+};
+
 app.use(readCookie);
 app.use(readBody);
 app.use(logRequest);
@@ -140,5 +156,7 @@ app.get('/getTodoLists', getTodoLists);
 app.post('/createUser', createUser);
 app.post('/validateUser', validateUser);
 app.get('/dashboard', serveDashboard);
+app.get('/logout', logout);
+app.get('/', checkUserLogin);
 app.use(reader);
 module.exports = app.handleRequest.bind(app);
