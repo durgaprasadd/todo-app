@@ -1,7 +1,8 @@
 const createList = function(document) {
   let title = document.getElementById('_title').value;
+  let description = document.getElementById('_description').value;
   let id = new Date().getTime();
-  let body = { id, title };
+  let body = { id, title, description };
   const req = new Request('/addList', {
     method: 'POST',
     body: JSON.stringify(body)
@@ -12,6 +13,7 @@ const createList = function(document) {
       addList(document, title, id);
       document.getElementById('_title').remove();
       document.getElementById('_submit').remove();
+      document.getElementById('_description').remove();
     });
 };
 
@@ -23,12 +25,19 @@ const addList = function(document, title, id) {
   parent.appendChild(newList);
 };
 
-const addTextBoxDetails = function(textBox) {
-  textBox.rows = 5;
-  textBox.col = 50;
-  textBox.placeholder = '*  title  *';
-  textBox.className = 'textBox';
-  textBox.id = '_title';
+const addTextBoxDetails = function(
+  textBox,
+  rows,
+  col,
+  placeholder,
+  className,
+  id
+) {
+  textBox.rows = rows;
+  textBox.col = col;
+  textBox.placeholder = placeholder;
+  textBox.className = className;
+  textBox.id = id;
 };
 
 const addSubmitButtonDetails = function(submitButton) {
@@ -40,11 +49,21 @@ const addSubmitButtonDetails = function(submitButton) {
 
 const createTextBox = function(document) {
   let parent = document.getElementById('_lists');
-  let textBox = document.createElement('textarea');
-  addTextBoxDetails(textBox);
+  let titleBox = document.createElement('textarea');
+  let descriptionBox = document.createElement('textarea');
+  addTextBoxDetails(titleBox, 3, 50, '* title *', 'titleBox', '_title');
+  addTextBoxDetails(
+    descriptionBox,
+    6,
+    50,
+    '* description *',
+    'descriptionBox',
+    '_description'
+  );
   let submitButton = document.createElement('button');
   addSubmitButtonDetails(submitButton);
-  parent.appendChild(textBox);
+  parent.appendChild(titleBox);
+  parent.appendChild(descriptionBox);
   parent.appendChild(submitButton);
 };
 

@@ -13,10 +13,10 @@ const users = new Users(getUsers());
 
 const logRequest = function(req, res, next) {
   console.log('url =>', req.url);
-  console.log('method =>', req.method);
-  console.log('headers =>', req.headers);
-  console.log('body =>', req.body);
-  console.log(todoLists);
+  //   console.log('method =>', req.method);
+  //   console.log('headers =>', req.headers);
+  //   console.log('body =>', req.body);
+  //   console.log(todoLists);
   next();
 };
 
@@ -72,8 +72,8 @@ const reader = function(req, res) {
 };
 
 const addList = function(req, res) {
-  let { title, id } = JSON.parse(req.body);
-  todoLists.addList(title, id);
+  let { title, description, id } = JSON.parse(req.body);
+  todoLists.addList(title, id, description);
   fs.writeFile(
     `./private/todoLists/${getUserName(req.cookie)}`,
     todoLists.getStringifiedLists(),
