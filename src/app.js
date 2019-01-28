@@ -71,14 +71,19 @@ const reader = function(req, res) {
   });
 };
 
-const addList = function(req, res) {
-  let { title, description, id } = JSON.parse(req.body);
-  todoLists.addList(title, id, description);
+const writeIntoFile = function(req) {
+  console.log('hello');
   fs.writeFile(
     `./private/todoLists/${getUserName(req.cookie)}`,
     todoLists.getStringifiedLists(),
     () => {}
   );
+};
+
+const addList = function(req, res) {
+  let { title, description, id } = JSON.parse(req.body);
+  todoLists.addList(title, id, description);
+  writeIntoFile(req);
   res.end();
 };
 
@@ -125,7 +130,8 @@ const serveDashboard = function(req, res) {
   const path = `./private/todoLists/${userName}`;
   fs.readFile(path, (err, data) => {
     if (!err) {
-      todoLists = new TodoLists(JSON.parse(data));
+      todoLists = new TodoLists();
+      todoLists.createObjects(JSON.parse(data));
       req.url = '/TODO.html';
       reader(req, res);
       return;
@@ -148,15 +154,52 @@ const checkUserLogin = function(req, res) {
   serveDashboard(req, res);
 };
 
+const getTodoItems = function(req, res, next) {
+  const id = req.url.slice(1);
+  if (id && isFinite(id)) {
+    const TODO = todoLists.getList(id);
+    fs.readFile('./public/List.html', 'utf8', (err, data) => {
+      if (!err) {
+        console.log(data);
+        let content = data.replace('#title#', TODO.listName);
+        content = content.replace('#description#', TODO.description || '');
+        send(res, content);
+        return;
+      }
+    });
+  } else {
+    next();
+  }
+};
+
+const submitItem = function(req, res) {
+  const { value, listId, id } = JSON.parse(req.body);
+  const TODO = todoLists.getList(listId);
+  TODO.addItem(value, id);
+  writeIntoFile(req);
+};
+
+const changeStatus = function(req, res) {
+  const { id, listId } = JSON.parse(req.body);
+  const todo = todoLists.getList(listId);
+  const item = todo.getItem(id);
+  item.toggleStatus();
+  writeIntoFile(req);
+};
+
 app.use(readCookie);
 app.use(readBody);
 app.use(logRequest);
+app.use(getTodoItems);
 app.post('/addList', addList);
 app.get('/getTodoLists', getTodoLists);
 app.post('/createUser', createUser);
 app.post('/validateUser', validateUser);
+app.post('/submitItem', submitItem);
+app.post('/changeStatus', changeStatus);
 app.get('/dashboard', serveDashboard);
 app.get('/logout', logout);
 app.get('/', checkUserLogin);
 app.use(reader);
+
 module.exports = app.handleRequest.bind(app);
