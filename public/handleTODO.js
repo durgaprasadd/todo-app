@@ -27,6 +27,14 @@ const addItemDetails = function(item, value, className, id) {
   item.innerHTML = `<input class="checkbox" onclick="changeStatus(event)" type="checkbox" id=${id}>${value}<br>`;
 };
 
+const createItem = function(value, id, status = false) {
+  const parent = document.getElementById('_items');
+  const itemElement = document.createElement('div');
+  addItemDetails(itemElement, value, 'list', id);
+  parent.appendChild(itemElement);
+  document.getElementById(id).checked = status;
+};
+
 const submitItem = function() {
   const item = document.getElementById('_itemDes');
   const value = item.value;
@@ -39,11 +47,9 @@ const submitItem = function() {
   });
   item.remove();
   document.getElementById('_submitItem').remove();
-  initialize();
-  const parent = document.getElementById('_items');
-  const itemElement = document.createElement('div');
-  addItemDetails(itemElement, value, 'list', id);
-  parent.appendChild(itemElement);
+  createItem(value, id);
+  const addItemButton = document.getElementById('_addItem');
+  addItemButton.onclick = addItem.bind(null, document, addItemButton);
 };
 
 const addSubmitButtonDetails = function(submitButton) {
@@ -67,6 +73,16 @@ const addItem = function(document, addItemButton) {
 const initialize = function() {
   const addItemButton = document.getElementById('_addItem');
   addItemButton.onclick = addItem.bind(null, document, addItemButton);
+  fetch('/getInitialTodoItems', {
+    method: 'POST',
+    body: window.location.pathname.slice(1)
+  })
+    .then(res => res.json())
+    .then(todoItems =>
+      todoItems.forEach(todoItem =>
+        createItem(todoItem.description, todoItem.id, todoItem.done)
+      )
+    );
 };
 
 window.onload = initialize;

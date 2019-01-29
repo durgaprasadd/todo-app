@@ -151,7 +151,10 @@ const checkUserLogin = function(req, res) {
     reader(req, res);
     return;
   }
-  serveDashboard(req, res);
+  res.statusCode = 302;
+  res.setHeader('location', '/dashboard');
+  res.end();
+  // serveDashboard(req, res);
 };
 
 const getTodoItems = function(req, res, next) {
@@ -187,6 +190,13 @@ const changeStatus = function(req, res) {
   writeIntoFile(req);
 };
 
+const getInitialTodoItems = function(req, res) {
+  const id = req.body;
+  const todo = todoLists.getList(id);
+  console.log(todo.items);
+  send(res, JSON.stringify(todo.items));
+};
+
 app.use(readCookie);
 app.use(readBody);
 app.use(logRequest);
@@ -199,6 +209,7 @@ app.post('/submitItem', submitItem);
 app.post('/changeStatus', changeStatus);
 app.get('/dashboard', serveDashboard);
 app.get('/logout', logout);
+app.post('/getInitialTodoItems', getInitialTodoItems);
 app.get('/', checkUserLogin);
 app.use(reader);
 

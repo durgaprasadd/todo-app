@@ -1,9 +1,9 @@
 class List {
-  constructor(listName, id, description) {
+  constructor(listName, id, description, items = []) {
     this.listName = listName;
     this.id = id;
     this.description = description;
-    this.items = [];
+    this.items = items;
   }
   addItem(itemDescription, id) {
     this.items.push(new Item(itemDescription, id));
@@ -14,10 +14,10 @@ class List {
 }
 
 class Item {
-  constructor(description, id) {
+  constructor(description, id, done = false) {
     this.description = description;
     this.id = id;
-    this.done = false;
+    this.done = done;
   }
   toggleStatus() {
     this.done = !this.done;
@@ -33,7 +33,13 @@ class TodoLists {
   }
   createObjects(lists) {
     this.lists = lists.map(
-      list => new List(list.listName, list.id, list.description)
+      list =>
+        new List(
+          list.listName,
+          list.id,
+          list.description,
+          list.items.map(item => new Item(item.description, item.id, item.done))
+        )
     );
   }
   addList(listName, id, description) {
