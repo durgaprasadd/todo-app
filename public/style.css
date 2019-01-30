@@ -122,5 +122,30 @@ a {
 .link {
   font-size: 30px;
   margin: 20px 150px 20px 0px;
-  /* background-color: lightblue; */
+}
+
+.editTitle {
+  font-size: 15px;
+  margin: 10px;
+  width: 200px;
+}
+
+.editDescription {
+  font-size: 15px;
+  margin: 10px;
+  width: 500px;
+}
+
+.editSubmit {
+  font-size: 15px;
+  margin: 10px;
+  height: 30px;
+  width: 80px;
+}
+
+.editCancel {
+  font-size: 15px;
+  height: 30px;
+  margin: 10px;
+  width: 80px;
 }

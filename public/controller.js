@@ -49,6 +49,7 @@ const editListHandler = function(document, id) {
 
 const addEditSubmitButtonDetais = function(submitButton, id) {
   submitButton.id = '_editSubmit';
+  submitButton.className = 'editSubmit';
   submitButton.innerText = 'Submit';
   submitButton.onclick = editListHandler.bind(null, document, id);
 };
@@ -67,6 +68,7 @@ const addEditDescriptionBoxDetais = function(descriptionBox, description) {
 
 const addCancelButtonDetails = function(cancelButton) {
   cancelButton.id = '_editCancel';
+  cancelButton.className = 'editCancel';
   cancelButton.innerText = 'Cancel';
   cancelButton.onclick = removePreviousEditBoxes;
 };
@@ -78,6 +80,9 @@ const appendChilds = function(parent, children) {
 const editList = function(id, title, description) {
   removePreviousEditBoxes();
   const parent = document.getElementById(id);
+  const newDiv = document.createElement('div');
+  newDiv.style.display = 'flex';
+  newDiv.style.alignItems = 'center';
   const titleBox = document.createElement('textarea');
   addEditTitleBoxDetais(titleBox, title);
   const descriptionBox = document.createElement('textarea');
@@ -86,7 +91,8 @@ const editList = function(id, title, description) {
   addEditSubmitButtonDetais(submitButton, id);
   const cancelButton = document.createElement('button');
   addCancelButtonDetails(cancelButton);
-  appendChilds(parent, [titleBox, descriptionBox, submitButton, cancelButton]);
+  appendChilds(newDiv, [titleBox, descriptionBox, submitButton, cancelButton]);
+  parent.appendChild(newDiv);
 };
 
 const addList = function(document, title, id, description) {

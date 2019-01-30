@@ -70,4 +70,19 @@ class TodoLists {
   }
 }
 
-module.exports = TodoLists;
+class LoggedInUsers {
+  constructor(users = {}) {
+    this.users = users;
+  }
+  addUser(userName, userTODOs) {
+    this.users[userName] = userTODOs;
+  }
+  removeUser(userName) {
+    delete this.users[userName];
+  }
+  getTODOs(userName) {
+    return this.users[userName];
+  }
+}
+
+module.exports = { TodoLists, LoggedInUsers };
