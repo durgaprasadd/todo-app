@@ -1,6 +1,6 @@
 .list {
   font-size: 30px;
-  margin: 20px 100px;
+  margin: 20px 150px 20px 0px;
   background-color: lightblue;
 }
 
@@ -99,4 +99,28 @@ a {
 
 .checkbox {
   zoom: 2;
+}
+
+.itemLogout {
+  font-size: 25px;
+  position: fixed;
+  left: 1250px;
+  top: 10px;
+}
+
+.delete {
+  font-size: 20px;
+  position: absolute;
+  right: 10px;
+}
+.edit {
+  font-size: 20px;
+  position: absolute;
+  right: 90px;
+}
+
+.link {
+  font-size: 30px;
+  margin: 20px 150px 20px 0px;
+  /* background-color: lightblue; */
 }

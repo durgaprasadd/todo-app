@@ -22,15 +22,77 @@ const changeStatus = function(event) {
   });
 };
 
-const addItemDetails = function(item, value, className, id) {
-  item.className = className;
-  item.innerHTML = `<input class="checkbox" onclick="changeStatus(event)" type="checkbox" id=${id}>${value}<br>`;
+const deleteItem = function(id) {
+  const listId = window.location.pathname.slice(1);
+  const body = { listId, id };
+  fetch('/deleteItem', { method: 'POST', body: JSON.stringify(body) }).then(
+    res => (window.location = window.location.pathname)
+  );
+};
+
+const removePreviousEditBoxes = function() {
+  let previousDescriptionBox = document.getElementById('_editDescription');
+  let previousSubmitButton = document.getElementById('_editSubmit');
+  let previousCancelButton = document.getElementById('_editCancel');
+  if (previousDescriptionBox) {
+    previousDescriptionBox.remove();
+    previousSubmitButton.remove();
+    previousCancelButton.remove();
+  }
+};
+
+const addEditDescriptionBoxDetais = function(descriptionBox, description) {
+  descriptionBox.value = description;
+  descriptionBox.id = '_editDescription';
+  descriptionBox.className = 'editDescription';
+};
+
+const editItemHandler = function(document, id) {
+  const listId = window.location.pathname.slice(1);
+  const newDescription = document.getElementById('_editDescription').value;
+  const body = { listId, id, newDescription };
+  fetch('/editItem', { method: 'POST', body: JSON.stringify(body) }).then(res =>
+    location.reload()
+  );
+};
+
+const addEditSubmitButtonDetais = function(submitButton, id) {
+  submitButton.id = '_editSubmit';
+  submitButton.innerText = 'Submit';
+  submitButton.onclick = editItemHandler.bind(null, document, id);
+};
+
+const addCancelButtonDetails = function(cancelButton) {
+  cancelButton.id = '_editCancel';
+  cancelButton.innerText = 'Cancel';
+  cancelButton.onclick = removePreviousEditBoxes;
+};
+
+const appendChilds = function(parent, children) {
+  children.forEach(child => parent.appendChild(child));
+};
+
+const editItem = function(id, description) {
+  removePreviousEditBoxes();
+  const parent = document.getElementById(`_parent${id}`);
+  const descriptionBox = document.createElement('textarea');
+  addEditDescriptionBoxDetais(descriptionBox, description);
+  const submitButton = document.createElement('button');
+  addEditSubmitButtonDetais(submitButton, id);
+  const cancelButton = document.createElement('button');
+  addCancelButtonDetails(cancelButton);
+  appendChilds(parent, [descriptionBox, submitButton, cancelButton]);
+};
+
+const addItemDetails = function(item, value, id) {
+  item.id = `_parent${id}`;
+  item.innerHTML = `<div class="list"><input class="checkbox" onclick="changeStatus(event)" type="checkbox" id=${id}>${value}<button onclick="editItem(${id},'${value}')" class="edit">Edit</button><button onclick="deleteItem(${id})" class="delete">delete</button><br></div>`;
 };
 
 const createItem = function(value, id, status = false) {
   const parent = document.getElementById('_items');
   const itemElement = document.createElement('div');
-  addItemDetails(itemElement, value, 'list', id);
+  addItemDetails(itemElement, value, id);
   parent.appendChild(itemElement);
   document.getElementById(id).checked = status;
 };
@@ -70,7 +132,13 @@ const addItem = function(document, addItemButton) {
   parent.appendChild(submitButton);
 };
 
+const logOut = function() {
+  fetch('/logout').then(res => (window.location = '/'));
+};
+
 const initialize = function() {
+  const logOutButton = document.getElementById('_itemLogout');
+  logOutButton.onclick = logOut;
   const addItemButton = document.getElementById('_addItem');
   addItemButton.onclick = addItem.bind(null, document, addItemButton);
   fetch('/getInitialTodoItems', {

@@ -32,7 +32,10 @@ const readBody = function(req, res, next) {
 const readCookie = function(req, res, next) {
   let cookie = req.headers.cookie;
   req.cookie = cookie;
-  if (!cookie) res.setHeader('set-cookie', `userName=`);
+  if (!cookie) {
+    res.setHeader('set-cookie', `userName=`);
+    req.cookie = `userName=`;
+  }
   next();
 };
 
@@ -72,7 +75,6 @@ const reader = function(req, res) {
 };
 
 const writeIntoFile = function(req) {
-  console.log('hello');
   fs.writeFile(
     `./private/todoLists/${getUserName(req.cookie)}`,
     todoLists.getStringifiedLists(),
@@ -81,6 +83,7 @@ const writeIntoFile = function(req) {
 };
 
 const addList = function(req, res) {
+  console.log(todoLists);
   let { title, description, id } = JSON.parse(req.body);
   todoLists.addList(title, id, description);
   writeIntoFile(req);
@@ -159,11 +162,11 @@ const checkUserLogin = function(req, res) {
 
 const getTodoItems = function(req, res, next) {
   const id = req.url.slice(1);
+  console.log(todoLists);
   if (id && isFinite(id)) {
     const TODO = todoLists.getList(id);
     fs.readFile('./public/List.html', 'utf8', (err, data) => {
       if (!err) {
-        console.log(data);
         let content = data.replace('#title#', TODO.listName);
         content = content.replace('#description#', TODO.description || '');
         send(res, content);
@@ -188,13 +191,45 @@ const changeStatus = function(req, res) {
   const item = todo.getItem(id);
   item.toggleStatus();
   writeIntoFile(req);
+  res.end();
 };
 
 const getInitialTodoItems = function(req, res) {
   const id = req.body;
   const todo = todoLists.getList(id);
-  console.log(todo.items);
   send(res, JSON.stringify(todo.items));
+};
+
+const deleteList = function(req, res) {
+  const id = req.body;
+  todoLists.deleteList(id);
+  writeIntoFile(req);
+  res.end();
+};
+
+const deleteItem = function(req, res) {
+  const { listId, id } = JSON.parse(req.body);
+  const TODO = todoLists.getList(listId);
+  TODO.deleteItem(id);
+  writeIntoFile(req);
+  res.end();
+};
+
+const editListHandler = function(req, res) {
+  const { newTitle, newDescription, id } = JSON.parse(req.body);
+  const TODO = todoLists.getList(id);
+  TODO.editList(newTitle, newDescription);
+  writeIntoFile(req);
+  res.end();
+};
+
+const editItemHandler = function(req, res) {
+  const { listId, newDescription, id } = JSON.parse(req.body);
+  const TODO = todoLists.getList(listId);
+  const item = TODO.getItem(id);
+  item.editDescription(newDescription);
+  writeIntoFile(req);
+  res.end();
 };
 
 app.use(readCookie);
@@ -210,6 +245,10 @@ app.post('/changeStatus', changeStatus);
 app.get('/dashboard', serveDashboard);
 app.get('/logout', logout);
 app.post('/getInitialTodoItems', getInitialTodoItems);
+app.post('/deleteList', deleteList);
+app.post('/deleteItem', deleteItem);
+app.post('/editList', editListHandler);
+app.post('/editItem', editItemHandler);
 app.get('/', checkUserLogin);
 app.use(reader);
 

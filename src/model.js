@@ -8,8 +8,17 @@ class List {
   addItem(itemDescription, id) {
     this.items.push(new Item(itemDescription, id));
   }
+  deleteItem(id) {
+    const index = this.items.findIndex(item => item.id == id);
+    this.items.copyWithin(index, index + 1);
+    this.items.pop();
+  }
   getItem(id) {
     return this.items.filter(item => item.id == id)[0];
+  }
+  editList(listName, description) {
+    this.listName = listName;
+    this.description = description;
   }
 }
 
@@ -44,6 +53,11 @@ class TodoLists {
   }
   addList(listName, id, description) {
     this.lists.push(new List(listName, id, description));
+  }
+  deleteList(id) {
+    const index = this.lists.findIndex(list => list.id == id);
+    this.lists.copyWithin(index, index + 1);
+    this.lists.pop();
   }
   getLists() {
     return this.lists;
