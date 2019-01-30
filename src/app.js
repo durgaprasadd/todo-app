@@ -13,10 +13,6 @@ const users = new Users(getUsers());
 
 const logRequest = function(req, res, next) {
   console.log('url =>', req.url);
-  //   console.log('method =>', req.method);
-  //   console.log('headers =>', req.headers);
-  //   console.log('body =>', req.body);
-  //   console.log(todoLists);
   next();
 };
 
@@ -43,8 +39,9 @@ const setCookie = function(res, userName) {
   res.setHeader('set-cookie', `userName=${userName}`);
 };
 
-const send = function(res, data, statusCode = 200) {
+const send = function(res, data, contentType, statusCode = 200) {
   res.statusCode = statusCode;
+  res.setHeader('content-type', contentType);
   res.write(data);
   res.end();
 };
@@ -65,20 +62,30 @@ const getPath = function(req) {
 
 const reader = function(req, res) {
   const path = getPath(req);
+  const extension = path.split('.').pop();
+  const MIMETypes = {
+    css: 'text/css',
+    html: 'text/html',
+    js: 'text/javascript',
+    png: 'image/png'
+  };
   fs.readFile(path, (err, data) => {
     if (err) {
       sendNotFound(res);
       return;
     }
-    send(res, data);
+    send(res, data, MIMETypes[extension]);
   });
 };
 
-const writeIntoFile = function(req) {
-  const userName = getUserName(req.cookie);
+const getUserTODOs = function(userName) {
+  return loggedInUsers.getTODOs(userName);
+}
+
+const writeIntoFile = function(userName) {
   fs.writeFile(
     `./private/todoLists/${userName}`,
-    loggedInUsers.getTODOs(userName).getStringifiedLists(),
+    getUserTODOs(userName).getStringifiedLists(),
     () => {}
   );
 };
@@ -86,14 +93,14 @@ const writeIntoFile = function(req) {
 const addList = function(req, res) {
   let { title, description, id } = JSON.parse(req.body);
   let userName = getUserName(req.cookie);
-  loggedInUsers.getTODOs(userName).addList(title, id, description);
-  writeIntoFile(req);
+  getUserTODOs(userName).addList(title, id, description);
+  writeIntoFile(userName);
   res.end();
 };
 
 const getTodoLists = function(req, res) {
   let userName = getUserName(req.cookie);
-  send(res, loggedInUsers.getTODOs(userName).getStringifiedLists());
+  send(res, getUserTODOs(userName).getStringifiedLists(), 'text/javascript');
 };
 
 const addUser = function(user) {
@@ -104,26 +111,26 @@ const addUser = function(user) {
 const createUser = function(req, res) {
   const user = JSON.parse(req.body);
   if (users.doesUserExist(user.userName)) {
-    send(res, 'alreadyExists');
+    send(res, 'alreadyExists', 'text/plain');
     return;
   }
   addUser(user);
   fs.writeFile(`./private/todoLists/${user.userName}`, '[]', () => {});
-  send(res, 'successful');
+  send(res, 'successful','text/plain');
 };
 
 const validateUser = function(req, res) {
   const user = JSON.parse(req.body);
   if (!users.doesUserExist(user.userName)) {
-    send(res, 'notExist');
+    send(res, 'notExist','text/plain');
     return;
   }
   if (!users.isValidUser(user)) {
-    send(res, 'incorrectPassword');
+    send(res, 'incorrectPassword','text/plain');
     return;
   }
   setCookie(res, user.userName);
-  send(res, 'success');
+  send(res, 'success','text/plain');
 };
 
 const getUserName = function(text) {
@@ -160,19 +167,18 @@ const checkUserLogin = function(req, res) {
   res.statusCode = 302;
   res.setHeader('location', '/dashboard');
   res.end();
-  // serveDashboard(req, res);
 };
 
 const getTodoItems = function(req, res, next) {
   const id = req.url.slice(1);
   const userName = getUserName(req.cookie);
   if (id && isFinite(id)) {
-    const TODO = loggedInUsers.getTODOs(userName).getList(id);
+    const TODO = getUserTODOs(userName).getList(id);
     fs.readFile('./public/List.html', 'utf8', (err, data) => {
       if (!err) {
         let content = data.replace('#title#', TODO.listName);
         content = content.replace('#description#', TODO.description || '');
-        send(res, content);
+        send(res, content,'text/html');
         return;
       }
     });
@@ -184,61 +190,61 @@ const getTodoItems = function(req, res, next) {
 const submitItem = function(req, res) {
   const userName = getUserName(req.cookie);
   const { value, listId, id } = JSON.parse(req.body);
-  const TODO = loggedInUsers.getTODOs(userName).getList(listId);
+  const TODO = getUserTODOs(userName).getList(listId);
   TODO.addItem(value, id);
-  writeIntoFile(req);
+  writeIntoFile(userName);
 };
 
 const changeStatus = function(req, res) {
   const userName = getUserName(req.cookie);
   const { id, listId } = JSON.parse(req.body);
-  const TODO = loggedInUsers.getTODOs(userName).getList(listId);
+  const TODO = getUserTODOs(userName).getList(listId);
   const item = TODO.getItem(id);
   item.toggleStatus();
-  writeIntoFile(req);
+  writeIntoFile(userName);
   res.end();
 };
 
 const getInitialTodoItems = function(req, res) {
   const id = req.body;
   const userName = getUserName(req.cookie);
-  const TODO = loggedInUsers.getTODOs(userName).getList(id);
-  send(res, JSON.stringify(TODO.items));
+  const TODO = getUserTODOs(userName).getList(id);
+  send(res, JSON.stringify(TODO.items), 'application/json');
 };
 
 const deleteList = function(req, res) {
   const id = req.body;
   const userName = getUserName(req.cookie);
-  loggedInUsers.getTODOs(userName).deleteList(id);
-  writeIntoFile(req);
+  getUserTODOs(userName).deleteList(id);
+  writeIntoFile(userName);
   res.end();
 };
 
 const deleteItem = function(req, res) {
   const { listId, id } = JSON.parse(req.body);
   const userName = getUserName(req.cookie);
-  const TODO = loggedInUsers.getTODOs(userName).getList(listId);
+  const TODO = getUserTODOs(userName).getList(listId);
   TODO.deleteItem(id);
-  writeIntoFile(req);
+  writeIntoFile(userName);
   res.end();
 };
 
 const editListHandler = function(req, res) {
   const { newTitle, newDescription, id } = JSON.parse(req.body);
   const userName = getUserName(req.cookie);
-  const TODO = loggedInUsers.getTODOs(userName).getList(id);
+  const TODO = getUserTODOs(userName).getList(id);
   TODO.editList(newTitle, newDescription);
-  writeIntoFile(req);
+  writeIntoFile(userName);
   res.end();
 };
 
 const editItemHandler = function(req, res) {
   const { listId, newDescription, id } = JSON.parse(req.body);
   const userName = getUserName(req.cookie);
-  const TODO = loggedInUsers.getTODOs(userName).getList(listId);
+  const TODO = getUserTODOs(userName).getList(listId);
   const item = TODO.getItem(id);
   item.editDescription(newDescription);
-  writeIntoFile(req);
+  writeIntoFile(userName);
   res.end();
 };
 
