@@ -177,7 +177,7 @@ const getUserName = function(document) {
 const initializeUserName = function(document) {
   const userName = getUserName(document);
   const userNameId = document.getElementById('_userName');
-  userNameId.innerText = `user: ${userName}`;
+  userNameId.innerText = userName;
 };
 
 const initialize = function() {
