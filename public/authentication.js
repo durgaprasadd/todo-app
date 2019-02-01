@@ -76,8 +76,8 @@ const divs = {
 };
 
 const initialize = function() {
-  const logiButton = elementById('login');
-  logiButton.onclick = getAuthDiv.bind(null, 'login', 'signup');
+  const loginButton = elementById('login');
+  loginButton.onclick = getAuthDiv.bind(null, 'login', 'signup');
   const signupButton = elementById('signup');
   signupButton.onclick = getAuthDiv.bind(null, 'signup', 'login');
 };

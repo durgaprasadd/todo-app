@@ -136,7 +136,20 @@ const logOut = function() {
   fetch('/logout').then(res => (window.location = '/'));
 };
 
+const getUserName = function(document) {
+  const cookie = document.cookie;
+  const index = cookie.indexOf('=');
+  return cookie.slice(index + 1);
+};
+
+const initializeUserName = function(document) {
+  const userName = getUserName(document);
+  const userNameId = document.getElementById('_userName');
+  userNameId.innerText = `user: ${userName}`;
+};
+
 const initialize = function() {
+  initializeUserName(document);
   const logOutButton = document.getElementById('_itemLogout');
   logOutButton.onclick = logOut;
   const addItemButton = document.getElementById('_addItem');

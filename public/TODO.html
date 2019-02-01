@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>TODO LIST</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="controller.js"></script>
+    <title>TODO</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="style.css" />
+    <script src="handleTODO.js"></script>
   </head>
   <body>
-    <div id="_lists" class="lists">
-      <header class="title">TODO LISTS</header>
-      <button id="_logout" class="logout">logout</button>
-      <button id="_addList" class="addList">Create New List</button>
-    </div>
+    <h1 id="_userName" class="userName"></h1>
+    <a href="/dashboard"><button class="itemButton">Back</button></a>
+    <div class="listName">Title : #title#</div>
+    <div class="description">Description : #description#</div>
+    <button class="itemLogout" id="_itemLogout">logout</button>
+    <button class="addItem" id="_addItem">Add Item</button>
+    <div id="_textDiv"></div>
+    <div id="_items"></div>
   </body>
 </html>

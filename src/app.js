@@ -3,16 +3,34 @@ const app = new Sheegra();
 const fs = require('fs');
 const { TodoLists, LoggedInUsers } = require('./model.js');
 const Users = require('./users.js');
+
+const FILES = {
+  homePage: '/homePage.html',
+  usersFile: './private/users.json',
+  dashboard: '/dashboard.html',
+  TODO: './public/TODO.html'
+};
+
+const MIME_TYPES = {
+  plain: 'text/plain',
+  json: 'application/json',
+  css: 'text/css',
+  html: 'text/html',
+  js: 'text/javascript',
+  png: 'image/png'
+};
 let loggedInUsers = new LoggedInUsers();
 
 const getUsers = function() {
-  const storedUsers = fs.readFileSync('./private/users.json');
+  const storedUsers = fs.readFileSync(FILES.usersFile);
   return JSON.parse(storedUsers);
 };
 const users = new Users(getUsers());
 
 const logRequest = function(req, res, next) {
   console.log('url =>', req.url);
+  console.log('cookie =>', req.cookie);
+  console.log('---------------------------------------->');
   next();
 };
 
@@ -55,7 +73,7 @@ const getPath = function(req) {
   const root = './public';
   let path = req.url;
   if (req.url == '/') {
-    path = '/homePage.html';
+    path = FILES.homePage;
   }
   return root + path;
 };
@@ -63,28 +81,23 @@ const getPath = function(req) {
 const reader = function(req, res) {
   const path = getPath(req);
   const extension = path.split('.').pop();
-  const MIMETypes = {
-    css: 'text/css',
-    html: 'text/html',
-    js: 'text/javascript',
-    png: 'image/png'
-  };
+
   fs.readFile(path, (err, data) => {
     if (err) {
       sendNotFound(res);
       return;
     }
-    send(res, data, MIMETypes[extension]);
+    send(res, data, MIME_TYPES[extension]);
   });
 };
 
 const getUserTODOs = function(userName) {
   return loggedInUsers.getTODOs(userName);
-}
+};
 
 const writeIntoFile = function(userName) {
   fs.writeFile(
-    `./private/todoLists/${userName}`,
+    `./private/TODOs/${userName}`,
     getUserTODOs(userName).getStringifiedLists(),
     () => {}
   );
@@ -100,52 +113,55 @@ const addList = function(req, res) {
 
 const getTodoLists = function(req, res) {
   let userName = getUserName(req.cookie);
-  send(res, getUserTODOs(userName).getStringifiedLists(), 'text/javascript');
+  send(res, getUserTODOs(userName).getStringifiedLists(), MIME_TYPES.js);
 };
 
 const addUser = function(user) {
   users.addUser(user);
-  fs.writeFile('./private/users.json', users.getStringifiedUsers(), err => {});
+  fs.writeFile(FILES.usersFile, users.getStringifiedUsers(), err => {});
 };
 
 const createUser = function(req, res) {
   const user = JSON.parse(req.body);
   if (users.doesUserExist(user.userName)) {
-    send(res, 'alreadyExists', 'text/plain');
+    send(res, 'alreadyExists', MIME_TYPES.plain);
     return;
   }
   addUser(user);
-  fs.writeFile(`./private/todoLists/${user.userName}`, '[]', () => {});
-  send(res, 'successful','text/plain');
+  fs.writeFile(`./private/TODOs/${user.userName}`, '[]', () => {});
+  send(res, 'successful', MIME_TYPES.plain);
 };
 
 const validateUser = function(req, res) {
   const user = JSON.parse(req.body);
   if (!users.doesUserExist(user.userName)) {
-    send(res, 'notExist','text/plain');
+    send(res, 'notExist', MIME_TYPES.plain);
     return;
   }
   if (!users.isValidUser(user)) {
-    send(res, 'incorrectPassword','text/plain');
+    send(res, 'incorrectPassword', MIME_TYPES.plain);
     return;
   }
   setCookie(res, user.userName);
-  send(res, 'success','text/plain');
+  send(res, 'success', MIME_TYPES.plain);
 };
 
 const getUserName = function(text) {
   return text.split('=')[1];
 };
 
+// const placeUsername = function(req) {};
+
 const serveDashboard = function(req, res) {
+  console.log('hello');
   let userName = getUserName(req.cookie);
-  const path = `./private/todoLists/${userName}`;
+  const path = `./private/TODOs/${userName}`;
   fs.readFile(path, (err, data) => {
     if (!err) {
       const todoLists = new TodoLists();
       todoLists.createObjects(JSON.parse(data));
       loggedInUsers.addUser(userName, todoLists);
-      req.url = '/TODO.html';
+      req.url = FILES.dashboard;
       reader(req, res);
       return;
     }
@@ -155,10 +171,12 @@ const serveDashboard = function(req, res) {
 
 const logout = function(req, res) {
   res.setHeader('set-cookie', `userName=`);
+  res.writeHead(302, { Location: '/' });
   res.end();
 };
 
 const checkUserLogin = function(req, res) {
+  console.log('hello');
   let userName = getUserName(req.cookie);
   if (!userName) {
     reader(req, res);
@@ -169,22 +187,26 @@ const checkUserLogin = function(req, res) {
   res.end();
 };
 
+const addTitleAndDescription = function(res, data, TODO) {
+  let content = data.replace('#title#', TODO.listName);
+  content = content.replace('#description#', TODO.description || '');
+  send(res, content, MIME_TYPES.html);
+};
+
+const serveTodo = function(res, TODO, next) {
+  fs.readFile(FILES.TODO, 'utf8', (err, data) => {
+    if (err || !TODO) return next();
+    addTitleAndDescription(res, data, TODO);
+  });
+};
+
 const getTodoItems = function(req, res, next) {
   const id = req.url.slice(1);
   const userName = getUserName(req.cookie);
-  if (id && isFinite(id)) {
-    const TODO = getUserTODOs(userName).getList(id);
-    fs.readFile('./public/List.html', 'utf8', (err, data) => {
-      if (!err) {
-        let content = data.replace('#title#', TODO.listName);
-        content = content.replace('#description#', TODO.description || '');
-        send(res, content,'text/html');
-        return;
-      }
-    });
-  } else {
-    next();
-  }
+  const TODOs = getUserTODOs(userName);
+  if (!TODOs) return next();
+  const TODO = TODOs.getList(id);
+  serveTodo(res, TODO, next);
 };
 
 const submitItem = function(req, res) {
@@ -209,7 +231,7 @@ const getInitialTodoItems = function(req, res) {
   const id = req.body;
   const userName = getUserName(req.cookie);
   const TODO = getUserTODOs(userName).getList(id);
-  send(res, JSON.stringify(TODO.items), 'application/json');
+  send(res, JSON.stringify(TODO.items), MIME_TYPES.json);
 };
 
 const deleteList = function(req, res) {

@@ -1,98 +1,107 @@
+const removeElements = function(document, ids) {
+  ids.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) element.remove();
+  });
+};
+
+const getValue = function(document, id) {
+  return document.getElementById(id).value;
+};
+
 const createList = function(document) {
-  let title = document.getElementById('_title').value;
+  let title = getValue(document, '_titleBox');
+  let description = getValue(document, '_descriptionBox');
   if (!title) return;
-  let description = document.getElementById('_description').value;
   let id = new Date().getTime();
   let body = { id, title, description };
-  const req = new Request('/addList', {
+
+  fetch('/addList', {
     method: 'POST',
     body: JSON.stringify(body)
   });
-  fetch(req)
-    .then(res => res.text())
-    .then(content => {
-      addList(document, title, id, description);
-      document.getElementById('_title').remove();
-      document.getElementById('_submit').remove();
-      document.getElementById('_description').remove();
-    });
+  addList(document, title, id, description);
+  removeElements(document, ['_titleBox', '_submit', '_descriptionBox']);
 };
 
 const deleteList = function(id) {
   fetch('/deleteList', {
     method: 'POST',
     body: id
-  }).then(res => (window.location = '/'));
-};
-
-const removePreviousEditBoxes = function() {
-  let previousTitleBox = document.getElementById('_editTitle');
-  let previousDescriptionBox = document.getElementById('_editDescription');
-  let previousSubmitButton = document.getElementById('_editSubmit');
-  let previousCancelButton = document.getElementById('_editCancel');
-  if (previousTitleBox || previousDescriptionBox) {
-    previousTitleBox.remove();
-    previousDescriptionBox.remove();
-    previousSubmitButton.remove();
-    previousCancelButton.remove();
-  }
+  }).then(() => (window.location = '/'));
 };
 
 const editListHandler = function(document, id) {
-  const newTitle = document.getElementById('_editTitle').value;
-  const newDescription = document.getElementById('_editDescription').value;
+  const newTitle = getValue(document, '_editTitleBox');
+  const newDescription = getValue(document, '_editDescriptionBox');
   const body = { newTitle, newDescription, id };
-  fetch('/editList', { method: 'POST', body: JSON.stringify(body) }).then(res =>
+
+  fetch('/editList', { method: 'POST', body: JSON.stringify(body) }).then(() =>
     location.reload()
   );
 };
 
-const addEditSubmitButtonDetais = function(submitButton, id) {
+const createEditSubmitButton = function(document, id) {
+  const submitButton = document.createElement('button');
   submitButton.id = '_editSubmit';
   submitButton.className = 'editSubmit';
   submitButton.innerText = 'Submit';
   submitButton.onclick = editListHandler.bind(null, document, id);
+  return submitButton;
 };
 
-const addEditTitleBoxDetais = function(titleBox, title) {
-  titleBox.value = title;
-  titleBox.id = '_editTitle';
-  titleBox.className = 'editTitle';
+const createEditTitleBox = function(document, title) {
+  const editTitleBox = document.createElement('textarea');
+  editTitleBox.value = title;
+  editTitleBox.id = '_editTitleBox';
+  editTitleBox.className = 'editTitle';
+  return editTitleBox;
 };
 
-const addEditDescriptionBoxDetais = function(descriptionBox, description) {
-  descriptionBox.value = description;
-  descriptionBox.id = '_editDescription';
-  descriptionBox.className = 'editDescription';
+const createEditDescriptionBox = function(document, description) {
+  const editDescriptionBox = document.createElement('textarea');
+  editDescriptionBox.value = description;
+  editDescriptionBox.id = '_editDescriptionBox';
+  editDescriptionBox.className = 'editDescription';
+  return editDescriptionBox;
 };
 
-const addCancelButtonDetails = function(cancelButton) {
+const createCancelButton = function(document) {
+  const cancelButton = document.createElement('button');
   cancelButton.id = '_editCancel';
   cancelButton.className = 'editCancel';
   cancelButton.innerText = 'Cancel';
-  cancelButton.onclick = removePreviousEditBoxes;
+  cancelButton.onclick = removeElements.bind(null, document, ['_editDiv']);
+  return cancelButton;
 };
 
-const appendChilds = function(parent, children) {
+const createEditDiv = function(document) {
+  const editDiv = document.createElement('div');
+  editDiv.id = '_editDiv';
+  editDiv.style.display = 'flex';
+  editDiv.style.alignItems = 'center';
+  return editDiv;
+};
+
+const appendChildren = function(parent, children) {
   children.forEach(child => parent.appendChild(child));
 };
 
 const editList = function(id, title, description) {
-  removePreviousEditBoxes();
+  removeElements(document, ['_editDiv']);
   const parent = document.getElementById(id);
-  const newDiv = document.createElement('div');
-  newDiv.style.display = 'flex';
-  newDiv.style.alignItems = 'center';
-  const titleBox = document.createElement('textarea');
-  addEditTitleBoxDetais(titleBox, title);
-  const descriptionBox = document.createElement('textarea');
-  addEditDescriptionBoxDetais(descriptionBox, description);
-  const submitButton = document.createElement('button');
-  addEditSubmitButtonDetais(submitButton, id);
-  const cancelButton = document.createElement('button');
-  addCancelButtonDetails(cancelButton);
-  appendChilds(newDiv, [titleBox, descriptionBox, submitButton, cancelButton]);
-  parent.appendChild(newDiv);
+  const editDiv = createEditDiv(document);
+  const editTitleBox = createEditTitleBox(document, title);
+  const editDescriptionBox = createEditDescriptionBox(document, description);
+  const submitButton = createEditSubmitButton(document, id);
+  const cancelButton = createCancelButton(document);
+  appendChildren(editDiv, [
+    editTitleBox,
+    editDescriptionBox,
+    submitButton,
+    cancelButton
+  ]);
+  appendChildren(parent, [editDiv]);
 };
 
 const addList = function(document, title, id, description) {
@@ -103,53 +112,51 @@ const addList = function(document, title, id, description) {
   parent.appendChild(newList);
 };
 
-const addTextBoxDetails = function(
-  textBox,
-  rows,
-  col,
-  placeholder,
-  className,
-  id
-) {
-  textBox.rows = rows;
-  textBox.col = col;
-  textBox.placeholder = placeholder;
-  textBox.className = className;
-  textBox.id = id;
+const createTextBox = function(details) {
+  const textBox = document.createElement('textarea');
+  textBox.rows = details.rows;
+  textBox.col = details.col;
+  textBox.placeholder = details.placeholder;
+  textBox.className = details.className;
+  textBox.id = details.id;
+  return textBox;
 };
 
-const addSubmitButtonDetails = function(submitButton) {
-  submitButton.innerText = 'submit';
+const createSubmitButton = function(document) {
+  const submitButton = document.createElement('button');
+  submitButton.innerText = 'Submit';
   submitButton.className = 'submitButton';
   submitButton.id = '_submit';
   submitButton.onclick = createList.bind(null, document);
+  return submitButton;
 };
 
-const createTextBox = function(document, title, description) {
-  let parent = document.getElementById('_lists');
-  let titleBox = document.createElement('textarea');
-  let descriptionBox = document.createElement('textarea');
-  addTextBoxDetails(titleBox, 3, 50, '* title *', 'titleBox', '_title');
-  addTextBoxDetails(
-    descriptionBox,
-    6,
-    50,
-    '* description *',
-    'descriptionBox',
-    '_description'
-  );
-  let submitButton = document.createElement('button');
-  addSubmitButtonDetails(submitButton);
-  parent.appendChild(titleBox);
-  parent.appendChild(descriptionBox);
-  parent.appendChild(submitButton);
+const createNewTodoForm = function(document, title, description) {
+  const parent = document.getElementById('_lists');
+  const titleBoxDetais = {
+    rows: 3,
+    col: 50,
+    placeholder: '* Title *',
+    className: 'titleBox',
+    id: '_titleBox'
+  };
+  const descriptionBoxDetails = {
+    rows: 6,
+    col: 50,
+    placeholder: '* Description *',
+    className: 'descriptionBox',
+    id: '_descriptionBox'
+  };
+  const titleBox = createTextBox(titleBoxDetais);
+  const descriptionBox = createTextBox(descriptionBoxDetails);
+  const submitButton = createSubmitButton(document);
+  appendChildren(parent, [titleBox, descriptionBox, submitButton]);
 };
 
 const getStoredTodoLists = function(document) {
   fetch('/getTodoLists')
-    .then(res => res.text())
-    .then(data => {
-      let listsDetails = JSON.parse(data);
+    .then(res => res.json())
+    .then(listsDetails => {
       listsDetails.forEach(listDetails =>
         addList(
           document,
@@ -161,15 +168,22 @@ const getStoredTodoLists = function(document) {
     });
 };
 
-const logout = function() {
-  fetch('/logout').then(res => (window.location = '/'));
+const getUserName = function(document) {
+  const cookie = document.cookie;
+  const index = cookie.indexOf('=');
+  return cookie.slice(index + 1);
+};
+
+const initializeUserName = function(document) {
+  const userName = getUserName(document);
+  const userNameId = document.getElementById('_userName');
+  userNameId.innerText = `user: ${userName}`;
 };
 
 const initialize = function() {
+  initializeUserName(document);
   const addListButton = document.getElementById('_addList');
-  addListButton.onclick = createTextBox.bind(null, document);
-  const logoutButton = document.getElementById('_logout');
-  logoutButton.onclick = logout;
+  addListButton.onclick = createNewTodoForm.bind(null, document);
   getStoredTodoLists(document);
 };
 
