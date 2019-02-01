@@ -1,7 +1,9 @@
 const getAuthDiv = function(divType, otherType) {
   const authDiv = elementById('authDiv');
-  elementById(divType).style.color = 'red';
+  elementById(divType).style.color = 'white';
+  elementById(divType).style.backgroundColor = 'black';
   elementById(otherType).style.color = 'black';
+  elementById(otherType).style.backgroundColor = 'white';
   authDiv.innerHTML = divs[divType];
 };
 
@@ -12,10 +14,11 @@ const elementById = function(id) {
 const showSignupResult = function(content) {
   elementById('newPassword').value = '';
   if (content === 'alreadyExists') {
-    elementById('_status').innerText = 'UserName Already Exists';
+    elementById('_status').innerText = 'Username Already Exists';
     return;
   }
-  elementById('_status').innerText = 'Sign up Successful!';
+  elementById('_status').innerText = 'Sign Up Successful!';
+  elementById('_status').style.color = 'green';
   elementById('newUser').value = '';
 };
 
@@ -23,7 +26,7 @@ const showLoginResult = function(content) {
   elementById('userName').value = '';
   elementById('password').value = '';
   if (content === 'notExist') {
-    elementById('_status').innerText = 'UserName Not Matched';
+    elementById('_status').innerText = 'Invalid Username';
     return;
   }
   if (content === 'incorrectPassword') {
