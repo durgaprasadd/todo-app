@@ -6,11 +6,14 @@
     <script src="handleTODO.js"></script>
   </head>
   <body>
-    <h1 id="_userName" class="userName"></h1>
+      <div style="display: flex;height: 30px;align-items: center">
+          <img src="/userIcon.png" class="userIcon"></img>
+          <h1 id="_userName" class="userName"></h1>
+        </div>
     <a href="/dashboard"><button class="itemButton">Back</button></a>
     <div class="listName">Title : #title#</div>
     <div class="description">Description : #description#</div>
-    <button class="itemLogout" id="_itemLogout">logout</button>
+    <a href="/logout"><button id="_itemLogout" class="itemLogout">Logout</button></a>
     <button class="addItem" id="_addItem">Add Item</button>
     <div id="_textDiv"></div>
     <div id="_items"></div>

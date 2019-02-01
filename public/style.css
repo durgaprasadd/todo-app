@@ -154,6 +154,5 @@ a {
 }
 
 .userName {
-  margin: 10px;
-  display: inline-block;
+  margin-left: 10px;
 }

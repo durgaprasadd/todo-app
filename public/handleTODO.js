@@ -132,10 +132,6 @@ const addItem = function(document, addItemButton) {
   parent.appendChild(submitButton);
 };
 
-const logOut = function() {
-  fetch('/logout').then(res => (window.location = '/'));
-};
-
 const getUserName = function(document) {
   const cookie = document.cookie;
   const index = cookie.indexOf('=');
@@ -145,13 +141,11 @@ const getUserName = function(document) {
 const initializeUserName = function(document) {
   const userName = getUserName(document);
   const userNameId = document.getElementById('_userName');
-  userNameId.innerText = `user: ${userName}`;
+  userNameId.innerText = userName;
 };
 
 const initialize = function() {
   initializeUserName(document);
-  const logOutButton = document.getElementById('_itemLogout');
-  logOutButton.onclick = logOut;
   const addItemButton = document.getElementById('_addItem');
   addItemButton.onclick = addItem.bind(null, document, addItemButton);
   fetch('/getInitialTodoItems', {
