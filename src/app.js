@@ -21,7 +21,16 @@ const MIME_TYPES = {
 };
 let loggedInUsers = new LoggedInUsers();
 
+const initializeFiles = function() {
+  if (!fs.existsSync('./private')) {
+    fs.mkdirSync('./private');
+    fs.mkdirSync('./private/TODOs');
+    fs.writeFileSync(FILES.usersFile, '[]');
+  }
+};
+
 const getUsers = function() {
+  initializeFiles();
   const storedUsers = fs.readFileSync(FILES.usersFile);
   return JSON.parse(storedUsers);
 };
