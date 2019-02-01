@@ -1,36 +1,21 @@
 const Sheegra = require('./sheegra');
 const app = new Sheegra();
 const fs = require('fs');
-const { TodoLists, LoggedInUsers } = require('./model.js');
+const { Todos, LoggedInUsers } = require('./model.js');
 const Users = require('./users.js');
+const { FILES, MIME_TYPES } = require('./constants.js');
+const loggedInUsers = new LoggedInUsers();
 
-const FILES = {
-  homePage: '/homePage.html',
-  usersFile: './private/users.json',
-  dashboard: '/dashboard.html',
-  TODO: './public/TODO.html'
-};
-
-const MIME_TYPES = {
-  plain: 'text/plain',
-  json: 'application/json',
-  css: 'text/css',
-  html: 'text/html',
-  js: 'text/javascript',
-  png: 'image/png'
-};
-let loggedInUsers = new LoggedInUsers();
-
-const initializeFiles = function() {
-  if (!fs.existsSync('./private')) {
-    fs.mkdirSync('./private');
-    fs.mkdirSync('./private/TODOs');
-    fs.writeFileSync(FILES.usersFile, '[]');
-  }
+const initializePrivateDir = function() {
+  fs.mkdirSync('./private');
+  fs.mkdirSync('./private/TODOs');
+  fs.writeFileSync(FILES.usersFile, '[]');
 };
 
 const getUsers = function() {
-  initializeFiles();
+  if (!fs.existsSync('./private')) {
+    initializePrivateDir();
+  }
   const storedUsers = fs.readFileSync(FILES.usersFile);
   return JSON.parse(storedUsers);
 };
@@ -39,7 +24,7 @@ const users = new Users(getUsers());
 const logRequest = function(req, res, next) {
   console.log('url =>', req.url);
   console.log('cookie =>', req.cookie);
-  console.log('---------------------------------------->');
+  console.log('<---------------------------------------->');
   next();
 };
 
@@ -74,21 +59,20 @@ const send = function(res, data, contentType, statusCode = 200) {
 };
 
 const sendNotFound = function(res) {
-  res.statusCode = 404;
-  res.end();
+  send(res, 'Not found', 'text/plain', 404);
 };
 
-const getPath = function(req) {
+const getPath = function(url) {
   const root = './public';
-  let path = req.url;
-  if (req.url == '/') {
+  let path = url;
+  if (url == '/') {
     path = FILES.homePage;
   }
   return root + path;
 };
 
 const reader = function(req, res) {
-  const path = getPath(req);
+  const path = getPath(req.url);
   const extension = path.split('.').pop();
 
   fs.readFile(path, (err, data) => {
@@ -104,10 +88,10 @@ const getUserTODOs = function(userName) {
   return loggedInUsers.getTODOs(userName);
 };
 
-const writeIntoFile = function(userName) {
+const writeIntoTodo = function(userName) {
   fs.writeFile(
-    `./private/TODOs/${userName}`,
-    getUserTODOs(userName).getStringifiedLists(),
+    FILES.TODO_DIR + userName,
+    getUserTODOs(userName).getStringifiedTodos(),
     () => {}
   );
 };
@@ -115,14 +99,14 @@ const writeIntoFile = function(userName) {
 const addList = function(req, res) {
   let { title, description, id } = JSON.parse(req.body);
   let userName = getUserName(req.cookie);
-  getUserTODOs(userName).addList(title, id, description);
-  writeIntoFile(userName);
+  getUserTODOs(userName).addTodo(title, id, description);
+  writeIntoTodo(userName);
   res.end();
 };
 
 const getTodoLists = function(req, res) {
   let userName = getUserName(req.cookie);
-  send(res, getUserTODOs(userName).getStringifiedLists(), MIME_TYPES.js);
+  send(res, getUserTODOs(userName).getStringifiedTodos(), MIME_TYPES.js);
 };
 
 const addUser = function(user) {
@@ -137,7 +121,7 @@ const createUser = function(req, res) {
     return;
   }
   addUser(user);
-  fs.writeFile(`./private/TODOs/${user.userName}`, '[]', () => {});
+  fs.writeFile(FILES.TODO_DIR + user.userName, '[]', () => {});
   send(res, 'successful', MIME_TYPES.plain);
 };
 
@@ -159,17 +143,14 @@ const getUserName = function(text) {
   return text.split('=')[1];
 };
 
-// const placeUsername = function(req) {};
-
 const serveDashboard = function(req, res) {
-  console.log('hello');
   let userName = getUserName(req.cookie);
-  const path = `./private/TODOs/${userName}`;
+  const path = FILES.TODO_DIR + userName;
   fs.readFile(path, (err, data) => {
     if (!err) {
-      const todoLists = new TodoLists();
-      todoLists.createObjects(JSON.parse(data));
-      loggedInUsers.addUser(userName, todoLists);
+      const todos = new Todos();
+      todos.parse(JSON.parse(data));
+      loggedInUsers.addUser(userName, todos);
       req.url = FILES.dashboard;
       reader(req, res);
       return;
@@ -197,7 +178,7 @@ const checkUserLogin = function(req, res) {
 };
 
 const addTitleAndDescription = function(res, data, TODO) {
-  let content = data.replace('#title#', TODO.listName);
+  let content = data.replace('#title#', TODO.title);
   content = content.replace('#description#', TODO.description || '');
   send(res, content, MIME_TYPES.html);
 };
@@ -214,68 +195,68 @@ const getTodoItems = function(req, res, next) {
   const userName = getUserName(req.cookie);
   const TODOs = getUserTODOs(userName);
   if (!TODOs) return next();
-  const TODO = TODOs.getList(id);
+  const TODO = TODOs.getTodo(id);
   serveTodo(res, TODO, next);
 };
 
 const submitItem = function(req, res) {
   const userName = getUserName(req.cookie);
   const { value, listId, id } = JSON.parse(req.body);
-  const TODO = getUserTODOs(userName).getList(listId);
+  const TODO = getUserTODOs(userName).getTodo(listId);
   TODO.addItem(value, id);
-  writeIntoFile(userName);
+  writeIntoTodo(userName);
 };
 
 const changeStatus = function(req, res) {
   const userName = getUserName(req.cookie);
   const { id, listId } = JSON.parse(req.body);
-  const TODO = getUserTODOs(userName).getList(listId);
+  const TODO = getUserTODOs(userName).getTodo(listId);
   const item = TODO.getItem(id);
   item.toggleStatus();
-  writeIntoFile(userName);
+  writeIntoTodo(userName);
   res.end();
 };
 
 const getInitialTodoItems = function(req, res) {
   const id = req.body;
   const userName = getUserName(req.cookie);
-  const TODO = getUserTODOs(userName).getList(id);
+  const TODO = getUserTODOs(userName).getTodo(id);
   send(res, JSON.stringify(TODO.items), MIME_TYPES.json);
 };
 
 const deleteList = function(req, res) {
   const id = req.body;
   const userName = getUserName(req.cookie);
-  getUserTODOs(userName).deleteList(id);
-  writeIntoFile(userName);
+  getUserTODOs(userName).deleteTodo(id);
+  writeIntoTodo(userName);
   res.end();
 };
 
 const deleteItem = function(req, res) {
   const { listId, id } = JSON.parse(req.body);
   const userName = getUserName(req.cookie);
-  const TODO = getUserTODOs(userName).getList(listId);
+  const TODO = getUserTODOs(userName).getTodo(listId);
   TODO.deleteItem(id);
-  writeIntoFile(userName);
+  writeIntoTodo(userName);
   res.end();
 };
 
 const editListHandler = function(req, res) {
   const { newTitle, newDescription, id } = JSON.parse(req.body);
   const userName = getUserName(req.cookie);
-  const TODO = getUserTODOs(userName).getList(id);
-  TODO.editList(newTitle, newDescription);
-  writeIntoFile(userName);
+  const TODO = getUserTODOs(userName).getTodo(id);
+  TODO.editTodo(newTitle, newDescription);
+  writeIntoTodo(userName);
   res.end();
 };
 
 const editItemHandler = function(req, res) {
   const { listId, newDescription, id } = JSON.parse(req.body);
   const userName = getUserName(req.cookie);
-  const TODO = getUserTODOs(userName).getList(listId);
+  const TODO = getUserTODOs(userName).getTodo(listId);
   const item = TODO.getItem(id);
   item.editDescription(newDescription);
-  writeIntoFile(userName);
+  writeIntoTodo(userName);
   res.end();
 };
 

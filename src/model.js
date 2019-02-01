@@ -1,27 +1,3 @@
-class List {
-  constructor(listName, id, description, items = []) {
-    this.listName = listName;
-    this.id = id;
-    this.description = description;
-    this.items = items;
-  }
-  addItem(itemDescription, id) {
-    this.items.push(new Item(itemDescription, id));
-  }
-  deleteItem(id) {
-    const index = this.items.findIndex(item => item.id == id);
-    this.items.copyWithin(index, index + 1);
-    this.items.pop();
-  }
-  getItem(id) {
-    return this.items.filter(item => item.id == id)[0];
-  }
-  editList(listName, description) {
-    this.listName = listName;
-    this.description = description;
-  }
-}
-
 class Item {
   constructor(description, id, done = false) {
     this.description = description;
@@ -36,37 +12,61 @@ class Item {
   }
 }
 
-class TodoLists {
-  constructor(lists = []) {
-    this.lists = lists;
+class Todo {
+  constructor(title, id, description, items = []) {
+    this.title = title;
+    this.id = id;
+    this.description = description;
+    this.items = items;
   }
-  createObjects(lists) {
-    this.lists = lists.map(
-      list =>
-        new List(
-          list.listName,
-          list.id,
-          list.description,
-          list.items.map(item => new Item(item.description, item.id, item.done))
+  addItem(description, id) {
+    this.items.push(new Item(description, id));
+  }
+  deleteItem(id) {
+    const index = this.items.findIndex(item => item.id == id);
+    this.items.copyWithin(index, index + 1);
+    this.items.pop();
+  }
+  getItem(id) {
+    return this.items.filter(item => item.id == id)[0];
+  }
+  editTodo(title, description) {
+    this.title = title;
+    this.description = description;
+  }
+}
+
+class Todos {
+  constructor(todos = []) {
+    this.todos = todos;
+  }
+  parse(todos) {
+    this.todos = todos.map(
+      todo =>
+        new Todo(
+          todo.title,
+          todo.id,
+          todo.description,
+          todo.items.map(item => new Item(item.description, item.id, item.done))
         )
     );
   }
-  addList(listName, id, description) {
-    this.lists.push(new List(listName, id, description));
+  addTodo(title, id, description) {
+    this.todos.push(new Todo(title, id, description));
   }
-  deleteList(id) {
-    const index = this.lists.findIndex(list => list.id == id);
-    this.lists.copyWithin(index, index + 1);
-    this.lists.pop();
+  deleteTodo(id) {
+    const index = this.todos.findIndex(todo => todo.id == id);
+    this.todos.copyWithin(index, index + 1);
+    this.todos.pop();
   }
-  getLists() {
-    return this.lists;
+  getTodos() {
+    return this.todos;
   }
-  getList(id) {
-    return this.lists.filter(list => list.id == id)[0];
+  getTodo(id) {
+    return this.todos.filter(todo => todo.id == id)[0];
   }
-  getStringifiedLists() {
-    return JSON.stringify(this.lists);
+  getStringifiedTodos() {
+    return JSON.stringify(this.todos);
   }
 }
 
@@ -85,4 +85,4 @@ class LoggedInUsers {
   }
 }
 
-module.exports = { TodoLists, LoggedInUsers };
+module.exports = { Todos, LoggedInUsers };

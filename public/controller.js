@@ -160,7 +160,7 @@ const getStoredTodoLists = function(document) {
       listsDetails.forEach(listDetails =>
         addList(
           document,
-          listDetails.listName,
+          listDetails.title,
           listDetails.id,
           listDetails.description
         )
