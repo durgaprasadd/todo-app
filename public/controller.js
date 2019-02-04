@@ -107,7 +107,7 @@ const editList = function(id, title, description) {
 const addList = function(document, title, id, description) {
   let parent = document.getElementById('_lists');
   let newList = document.createElement('div');
-  newList.innerHTML = `<div class='list' ><a class="link" href="${id}">>> ${title}</a><button onclick="editList('${id}','${title}','${description}')" id="_${id}edit" class="edit">Edit</button><button onclick = "deleteList(${id})" class="delete">Delete</button></div>`;
+  newList.innerHTML = `<div class='todo' ><a class="link" href="${id}">>> ${title}</a><button onclick="editList('${id}','${title}','${description}')" id="_${id}edit" class="edit">Edit</button><button onclick = "deleteList(${id})" class="delete">Delete</button></div>`;
   newList.id = id;
   parent.appendChild(newList);
 };
