@@ -14,7 +14,7 @@ const createList = function(document) {
   let description = getValue(document, '_descriptionBox');
   if (!title) return;
   let id = new Date().getTime();
-  let body = {id, title, description };
+  let body = { id, title, description };
 
   fetch('/addList', {
     method: 'POST',
@@ -168,20 +168,7 @@ const getStoredTodoLists = function(document) {
     });
 };
 
-const getUserName = function(document) {
-  const cookie = document.cookie;
-  const index = cookie.indexOf('=');
-  return cookie.slice(index + 1);
-};
-
-const initializeUserName = function(document) {
-  const userName = getUserName(document);
-  const userNameId = document.getElementById('_userName');
-  userNameId.innerText = userName;
-};
-
 const initialize = function() {
-  initializeUserName(document);
   const addListButton = document.getElementById('_addList');
   addListButton.onclick = createNewTodoForm.bind(null, document);
   getStoredTodoLists(document);

@@ -86,7 +86,7 @@ const editItem = function(id, description) {
 
 const addItemDetails = function(item, value, id) {
   item.id = `_parent${id}`;
-  item.innerHTML = `<div class="list"><input class="checkbox" onclick="changeStatus(event)" type="checkbox" id=${id}>${value}<button onclick="editItem(${id},'${value}')" class="edit">Edit</button><button onclick="deleteItem(${id})" class="delete">delete</button><br></div>`;
+  item.innerHTML = `<div class="todo"><input class="checkbox" onclick="changeStatus(event)" type="checkbox" id=${id}>${value}<button onclick="editItem(${id},'${value}')" class="edit">Edit</button><button onclick="deleteItem(${id})" class="delete">delete</button><br></div>`;
 };
 
 const createItem = function(value, id, status = false) {

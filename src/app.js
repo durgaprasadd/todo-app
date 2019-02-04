@@ -10,6 +10,8 @@ const {
   sendNotFound,
   readUsername
 } = require('./handlers.js');
+const view = require('pug');
+
 const { Todos, Todo, Item, LoggedInUsers } = require('./model.js');
 const app = express();
 const loggedInUsers = new LoggedInUsers();
@@ -106,12 +108,12 @@ const validateUser = function(req, res) {
 };
 
 const serveDashboard = function(req, res) {
-  fs.readFile('./public' + FILES.dashboard, (err, data) => {
+  res.render('dashboard', function(err, template) {
     if (err) {
-      sendNotFound(res);
-      return;
+      console.log(res.statusCode);
     }
-    send(res, data, 'text/html');
+    const dashboard = template.replace('#username#', req.username);
+    res.send(dashboard);
   });
 };
 
@@ -122,13 +124,7 @@ const logout = function(req, res) {
 };
 
 const serverHomepage = function(res) {
-  fs.readFile('./public' + FILES.homePage, (err, homePage) => {
-    if (err) {
-      sendNotFound(res);
-      return;
-    }
-    send(res, homePage, 'text/html');
-  });
+  res.render('homePage');
 };
 
 const checkUserLogin = function(req, res) {
@@ -225,6 +221,13 @@ const editItemHandler = function(req, res) {
   writeIntoTodo(username);
   res.end();
 };
+
+app.set(
+  'views',
+  '/Users/aftabshk/html/playingWithHTML/playingWithServer/todo-app/public'
+);
+app.engine('html', view.__express);
+app.set('view engine', 'html');
 
 app.use(readCookie);
 app.use(readBody);

@@ -166,3 +166,12 @@ a {
   align-items: center;
   justify-content: flex-end;
 }
+
+.mainHeading {
+  display: flex;
+  height : 60px;
+  font-size: 30px;
+  background:#00B2EE;
+  justify-content: center;
+  align-items: center;
+}
