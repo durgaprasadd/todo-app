@@ -14,7 +14,7 @@ const createList = function(document) {
   let description = getValue(document, '_descriptionBox');
   if (!title) return;
   let id = new Date().getTime();
-  let body = { id, title, description };
+  let body = {id, title, description };
 
   fetch('/addList', {
     method: 'POST',

@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/durgaprasadd/todo-app/issues"
   },
-  "homepage": "https://github.com/durgaprasadd/todo-app#readme"
+  "homepage": "https://github.com/durgaprasadd/todo-app#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
 }

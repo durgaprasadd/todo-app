@@ -15,16 +15,16 @@ const addTextBoxDetails = function(
 
 const changeStatus = function(event) {
   const id = event.srcElement.id;
-  const listId = window.location.pathname.slice(1);
+  const todoId = window.location.pathname.slice(1);
   fetch('/changeStatus', {
     method: 'POST',
-    body: JSON.stringify({ id, listId })
+    body: JSON.stringify({ id, todoId })
   });
 };
 
 const deleteItem = function(id) {
-  const listId = window.location.pathname.slice(1);
-  const body = { listId, id };
+  const todoId = window.location.pathname.slice(1);
+  const body = { todoId, id };
   fetch('/deleteItem', { method: 'POST', body: JSON.stringify(body) }).then(
     res => (window.location = window.location.pathname)
   );
@@ -48,9 +48,9 @@ const addEditDescriptionBoxDetais = function(descriptionBox, description) {
 };
 
 const editItemHandler = function(document, id) {
-  const listId = window.location.pathname.slice(1);
+  const todoId = window.location.pathname.slice(1);
   const newDescription = document.getElementById('_editDescription').value;
-  const body = { listId, id, newDescription };
+  const body = { todoId, id, newDescription };
   fetch('/editItem', { method: 'POST', body: JSON.stringify(body) }).then(res =>
     location.reload()
   );
@@ -100,12 +100,12 @@ const createItem = function(value, id, status = false) {
 const submitItem = function() {
   const item = document.getElementById('_itemDes');
   const value = item.value;
-  const listId = window.location.pathname.slice(1);
+  const todoId = window.location.pathname.slice(1);
   const id = new Date().getTime();
   if (!value) return;
   fetch('/submitItem', {
     method: 'POST',
-    body: JSON.stringify({ value, listId, id })
+    body: JSON.stringify({ value, todoId, id })
   });
   item.remove();
   document.getElementById('_submitItem').remove();
