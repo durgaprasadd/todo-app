@@ -1,6 +1,5 @@
 const express = require('express');
 const fs = require('fs');
-const Users = require('./users.js');
 const { FILES, MIME_TYPES } = require('./constants.js');
 const {
   logRequest,
@@ -11,26 +10,9 @@ const {
   readUsername
 } = require('./handlers.js');
 const view = require('pug');
-
 const { Todos, Todo, Item, LoggedInUsers } = require('./model.js');
 const app = express();
 const loggedInUsers = new LoggedInUsers();
-
-const initializePrivateDir = function() {
-  fs.mkdirSync('./private');
-  fs.mkdirSync('./private/TODOs');
-  fs.writeFileSync(FILES.usersFile, '[]');
-};
-
-const getUsers = function() {
-  if (!fs.existsSync('./private')) {
-    initializePrivateDir();
-  }
-  const storedUsers = fs.readFileSync(FILES.usersFile);
-  return JSON.parse(storedUsers);
-};
-const users = new Users(getUsers());
-
 const setCookie = function(res, userName) {
   res.setHeader('set-cookie', `userName=${userName}`);
 };
@@ -61,18 +43,18 @@ const getTodoLists = function(req, res) {
   send(res, getUserTODOs(username).getStringifiedTodos(), MIME_TYPES.js);
 };
 
-const addUser = function(user) {
+const addUser = function(users, user) {
   users.addUser(user);
   fs.writeFile(FILES.usersFile, users.getStringifiedUsers(), err => {});
 };
 
 const createUser = function(req, res) {
   const user = JSON.parse(req.body);
-  if (users.doesUserExist(user.userName)) {
+  if (res.app.users.doesUserExist(user.userName)) {
     send(res, 'alreadyExists', MIME_TYPES.plain);
     return;
   }
-  addUser(user);
+  addUser(res.app.users, user);
   fs.writeFile(FILES.TODO_DIR + user.userName, '[]', () => {});
   send(res, 'successful', MIME_TYPES.plain);
 };
@@ -96,11 +78,11 @@ const login = function(res, username) {
 
 const validateUser = function(req, res) {
   const user = JSON.parse(req.body);
-  if (!users.doesUserExist(user.userName)) {
+  if (!res.app.users.doesUserExist(user.userName)) {
     send(res, 'notExist', MIME_TYPES.plain);
     return;
   }
-  if (!users.isValidUser(user)) {
+  if (!res.app.users.isValidUser(user)) {
     send(res, 'incorrectPassword', MIME_TYPES.plain);
     return;
   }
@@ -123,14 +105,14 @@ const logout = function(req, res) {
   res.end();
 };
 
-const serverHomepage = function(res) {
+const serveHomepage = function(res) {
   res.render('homePage');
 };
 
 const checkUserLogin = function(req, res) {
   const username = req.username;
   if (!username) {
-    serverHomepage(res);
+    serveHomepage(res);
     return;
   }
   res.statusCode = 302;

@@ -1,6 +1,3 @@
-const fs = require('fs');
-const { FILES, MIME_TYPES } = require('./constants.js');
-
 const logRequest = function(req, res, next) {
   console.log('url =>', req.url);
   console.log('cookie =>', req.cookie);
