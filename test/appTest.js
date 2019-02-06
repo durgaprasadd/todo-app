@@ -6,6 +6,7 @@ describe('GET /', function() {
   it('respond with text/html, 200 status code and login page', function(done) {
     request(app)
       .get('/')
+      .set('Accept', 'application/json')
       .expect(200)
       .expect('content-type', 'text/html; charset=utf-8')
       .end(done);
@@ -18,7 +19,7 @@ describe('POST /', function() {
     app.users = new Users(rawUsersData);
     request(app)
       .post('/validateUser')
-      .send({ userName: 'affishaikh', password: 'kakashi' })
+      .send({ userName: 'testuser', password: 'p@ssword' })
       .expect(200)
       .expect('content-type', 'text/plain')
       .end(done);
