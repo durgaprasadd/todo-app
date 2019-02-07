@@ -204,10 +204,7 @@ const editItemHandler = function(req, res) {
   res.end();
 };
 
-app.set(
-  'views',
-  '/Users/aftabshk/html/playingWithHTML/playingWithServer/todo-app/public'
-);
+app.set('views', __dirname + '/../' + 'public');
 app.engine('html', view.__express);
 app.set('view engine', 'html');
 
