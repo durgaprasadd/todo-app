@@ -107,7 +107,7 @@ const editList = function(id, title, description) {
 const addList = function(document, title, id, description) {
   let parent = document.getElementById('_lists');
   let newList = document.createElement('div');
-  newList.innerHTML = `<div class='list' ><a class="link" href="${id}">>> ${title}</a><button onclick="editList('${id}','${title}','${description}')" id="_${id}edit" class="edit">Edit</button><button onclick = "deleteList(${id})" class="delete">Delete</button></div>`;
+  newList.innerHTML = `<div class='todo' ><a class="link" href="${id}">>> ${title}</a><button onclick="editList('${id}','${title}','${description}')" id="_${id}edit" class="edit">Edit</button><button onclick = "deleteList(${id})" class="delete">Delete</button></div>`;
   newList.id = id;
   parent.appendChild(newList);
 };
@@ -168,20 +168,7 @@ const getStoredTodoLists = function(document) {
     });
 };
 
-const getUserName = function(document) {
-  const cookie = document.cookie;
-  const index = cookie.indexOf('=');
-  return cookie.slice(index + 1);
-};
-
-const initializeUserName = function(document) {
-  const userName = getUserName(document);
-  const userNameId = document.getElementById('_userName');
-  userNameId.innerText = userName;
-};
-
 const initialize = function() {
-  initializeUserName(document);
   const addListButton = document.getElementById('_addList');
   addListButton.onclick = createNewTodoForm.bind(null, document);
   getStoredTodoLists(document);

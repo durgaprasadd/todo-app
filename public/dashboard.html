@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>TODO LIST</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="style.css" />
     <script src="controller.js"></script>
   </head>
   <body>
-    <div style="display: flex;height: 30px;align-items: center">
+    <section class="topBar">
       <img src="/userIcon.png" class="userIcon"></img>
-      <h1 id="_userName" class="userName">#userName#</h1>
-    </div>
-    <div id="_lists" class="lists">
-      <header class="title">TODO LISTS</header>
+      <h1 id="_userName" class="userName">#username#</h1>
       <a href="/logout"><button id="_logout" class="logout">Logout</button></a>
+    </section>
+    <div id="_lists" class="lists">
+      <header class="title">TODOs</header>
       <button id="_addList" class="addList">Create New List</button>
     </div>
   </body>
