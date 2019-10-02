@@ -204,7 +204,7 @@ const editItemHandler = function(req, res) {
   res.end();
 };
 
-app.set('views', __dirname + '/../' + 'public');
+app.set('views', __dirname + '/../' + 'public/html');
 app.engine('html', view.__express);
 app.set('view engine', 'html');
 
